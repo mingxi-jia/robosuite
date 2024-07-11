@@ -519,8 +519,20 @@ class MujocoEnv(metaclass=EnvMeta):
         path = os.path.split(robosuite.__file__)[0]
         path_split = path.split("/")
 
-        # replace mesh and texture file paths
         tree = ET.fromstring(xml_str)
+
+        # add customized cams in 'models/assets/arenas/table_arena.xml'
+        customized_arena_xml = ET.fromstring(self.model.get_xml())
+        arena_cameras = customized_arena_xml.find('worldbody').findall('camera')
+        for child1 in tree:
+            if child1.tag == 'worldbody':
+                old_cams = child1.findall('camera')
+                for child2 in old_cams:
+                    child1.remove(child2)
+                for new_cam in arena_cameras:
+                    child1.append(new_cam)
+
+        # replace mesh and texture file paths
         root = tree
         asset = root.find("asset")
         meshes = asset.findall("mesh")
