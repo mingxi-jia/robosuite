@@ -52,6 +52,7 @@
     </body>
     <light pos="1.0 1.0 1.5" dir="-0.2 -0.2 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false"/>
     <!-- front view -->
+    <!-- quaternion format: wxyz -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->
     <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
@@ -62,6 +63,7 @@
     <!-- new camera -->
     <camera mode="fixed" name="sideview2" pos="0. -1.5 1.4879572214102434" quat="0.7933533 0.6087614 0 0" />
     <camera mode="fixed" name="backview" pos="-0.8 0.7 1.2" quat=" 0.4777144 0.1530459 -0.5213338 -0.6903455 " />
+    <camera mode="fixed" name="spaceview" pos="1.0 0 1.55" quat="0.6408564 0.2988362 0.2988362 0.6408564"/>
     <!-- new camera ends-->
   </worldbody>
 </mujoco>
