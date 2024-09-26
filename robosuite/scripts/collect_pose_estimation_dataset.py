@@ -31,7 +31,7 @@ AXIS_IDX = {
     }
 # ACTION_FREQ = 0.2
 
-def toggle_rotation(env, num_of_toggle:int, axis:str):
+def toggle_rotation(env, num_of_toggle:int, axis:str, render=False):
     assert axis in ['rx', 'ry', 'rz']
     rot = -1. if num_of_toggle < 0 else 1.
     for _ in range(abs(num_of_toggle)):
@@ -41,7 +41,8 @@ def toggle_rotation(env, num_of_toggle:int, axis:str):
         action[AXIS_IDX[axis]] = rot
         env.step(action)
         # print(env.robots[0].recent_ee_pose.last)
-        env.render()
+        if render:
+            env.render()
         # time.sleep(ACTION_FREQ)
 
 def rotation_backforth(env, r_min:int, r_max:int, axis:str):
@@ -51,7 +52,7 @@ def rotation_backforth(env, r_min:int, r_max:int, axis:str):
     toggle_rotation(env, r_max, axis)
     toggle_rotation(env, -r_max, axis)
 
-def collect_organized_spatial_trajectory(env, device, arm, env_configuration, spatial_xyz_goal, spatial_resolution):
+def collect_organized_spatial_trajectory(env, device, arm, env_configuration, spatial_xyz_goal, spatial_resolution, render=False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -67,7 +68,8 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
     env.reset()
 
     # ID = 2 always corresponds to agentview
-    env.render()
+    if render:
+        env.render()
 
     low, high = env.action_spec
     gripper_low, gripper_high = low[-1], high[-1]
@@ -91,7 +93,8 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
         # time.sleep(ACTION_FREQ)
         # print(active_robot.recent_ee_pose.last)
         env.step(action)
-        env.render()
+        if render:
+            env.render()
         # if i % 100 ==0:
         #     print(env.sim.data.qpos[env.drawer_qpos_addr])
         # Also break if we complete the task
@@ -102,13 +105,13 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
         
     # rz_min, rz_max = -30, 53
     rz_min, rz_max = -20, 45
-    rotation_backforth(env, rz_min, rz_max, 'rz')
+    rotation_backforth(env, rz_min, rz_max, 'rz', render=render)
     # rx_min, rx_max = -22, 22
     rx_min, rx_max = -5, 5
-    rotation_backforth(env, rx_min, rx_max, 'rx')
+    rotation_backforth(env, rx_min, rx_max, 'rx', render=render)
     # ry_min, ry_max = -17, 10
     ry_min, ry_max = -5, 5
-    rotation_backforth(env, ry_min, ry_max, 'ry')
+    rotation_backforth(env, ry_min, ry_max, 'ry', render=render)
     
     # do some random movement around the goal xyz
     
@@ -116,7 +119,8 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
     # for i in range(200):
     #     action = np.random.uniform(low, high)
     #     obs, reward, done, _ = env.step(action)
-    #     env.render()
+    #     if render:
+    #         env.render()
     # cleanup for end of data collection episodes
         
     env.close()
@@ -137,7 +141,8 @@ def collect_random_spatial_trajectory(env, device, arm, env_configuration, spati
     env.reset()
 
     # ID = 2 always corresponds to agentview
-    env.render()
+    if render:
+        env.render()
 
     low, high = env.action_spec
     gripper_low, gripper_high = low[-1], high[-1]
@@ -161,7 +166,8 @@ def collect_random_spatial_trajectory(env, device, arm, env_configuration, spati
             # time.sleep(ACTION_FREQ)
             print(active_robot.recent_ee_pose.last)
             env.step(action)
-            env.render()
+            if render:
+                env.render()
             # if i % 100 ==0:
             #     print(env.sim.data.qpos[env.drawer_qpos_addr])
             # Also break if we complete the task
@@ -173,7 +179,8 @@ def collect_random_spatial_trajectory(env, device, arm, env_configuration, spati
     for i in range(200):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
-        env.render()
+        if render:
+            env.render()
     # cleanup for end of data collection episodes
         
     env.close()
@@ -288,6 +295,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument('--enable_render', action='store_true')
     args = parser.parse_args()
 
     # Get controller config
@@ -317,7 +325,9 @@ if __name__ == "__main__":
     )
 
     # Wrap this with visualization wrapper
-    env = VisualizationWrapper(env)
+    enable_render = args.enable_render
+    if enable_render:
+        env = VisualizationWrapper(env)
 
     # Grab reference to controller config and convert it to json-encoded string
     env_info = json.dumps(config)
@@ -361,12 +371,13 @@ if __name__ == "__main__":
     
     for xyz in tqdm(xyz_coordinates, desc="generate organized spatial trajectory"):
         # xyz = np.array([0,0,1.0])
-        collect_organized_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3))
+        collect_organized_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+        break
     for xyz in tqdm(xyz_coordinates, desc="generate random spatial trajectory"):
         # xyz = np.array([0,0,1.0])
-        collect_random_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3))
+        collect_random_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
     for xyz in tqdm(range(20), desc="generate random spatial trajectory at start"):
-        collect_random_spatial_trajectory(env, device, args.arm, args.config, None, spatial_resolution=np.sqrt(spatial_resolution**2*3))
+        collect_random_spatial_trajectory(env, device, args.arm, args.config, None, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
