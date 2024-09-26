@@ -51,7 +51,7 @@ def rotation_backforth(env, r_min:int, r_max:int, axis:str):
     toggle_rotation(env, r_max, axis)
     toggle_rotation(env, -r_max, axis)
 
-def collect_organized_spatial_trajectory(env, device, arm, env_configuration, spatial_xyz_goal, spatial_resolution, render=False):
+def collect_organized_spatial_trajectory(env, arm, env_configuration, spatial_xyz_goal, spatial_resolution, render=False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -59,7 +59,6 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
 
     Args:
         env (MujocoEnv): environment to control
-        device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
         env_configuration (str): specified environment configuration
     """
@@ -76,7 +75,6 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
-    device.start_control()
 
     # Go to xyz goal
     i = 0
@@ -124,7 +122,7 @@ def collect_organized_spatial_trajectory(env, device, arm, env_configuration, sp
         
     env.close()
 
-def collect_random_spatial_trajectory(env, device, arm, env_configuration, spatial_xyz_goal, spatial_resolution):
+def collect_random_spatial_trajectory(env, arm, env_configuration, spatial_xyz_goal, spatial_resolution, render=False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -132,7 +130,6 @@ def collect_random_spatial_trajectory(env, device, arm, env_configuration, spati
 
     Args:
         env (MujocoEnv): environment to control
-        device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
         env_configuration (str): specified environment configuration
     """
@@ -149,7 +146,6 @@ def collect_random_spatial_trajectory(env, device, arm, env_configuration, spati
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
-    device.start_control()
 
     # Go to xyz goal
     if spatial_xyz_goal is not None:
@@ -335,17 +331,6 @@ if __name__ == "__main__":
     tmp_directory = "/tmp/{}".format(str(time.time()).replace(".", "_"))
     env = DataCollectionWrapper(env, tmp_directory)
 
-    # initialize device
-    if args.device == "keyboard":
-        from robosuite.devices import Keyboard
-
-        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-    elif args.device == "spacemouse":
-        from robosuite.devices import SpaceMouse
-
-        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-    else:
-        raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
     # make a new timestamped directory
     t1, t2 = str(time.time()).split(".")
@@ -370,13 +355,14 @@ if __name__ == "__main__":
     
     for xyz in tqdm(xyz_coordinates, desc="generate organized spatial trajectory"):
         # xyz = np.array([0,0,1.0])
-        collect_organized_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
+        collect_organized_spatial_trajectory(env, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
         break
     for xyz in tqdm(xyz_coordinates, desc="generate random spatial trajectory"):
         # xyz = np.array([0,0,1.0])
-        collect_random_spatial_trajectory(env, device, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
+        collect_random_spatial_trajectory(env, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
-    for xyz in tqdm(range(20), desc="generate random spatial trajectory at start"):
-        collect_random_spatial_trajectory(env, device, args.arm, args.config, None, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
+    for xyz in tqdm(range(100), desc="generate random spatial trajectory at start"):
+        goal = None
+        collect_random_spatial_trajectory(env, args.arm, args.config, goal, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
