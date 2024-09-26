@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 import robosuite as suite
 import robosuite.macros as macros
 from robosuite import load_controller_config
-from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 import mimicgen
 
