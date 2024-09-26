@@ -44,12 +44,12 @@ def toggle_rotation(env, num_of_toggle:int, axis:str, render=False):
             env.render()
         # time.sleep(ACTION_FREQ)
 
-def rotation_backforth(env, r_min:int, r_max:int, axis:str):
+def rotation_backforth(env, r_min:int, r_max:int, axis:str, render=False):
     assert axis in ['rx', 'ry', 'rz']
-    toggle_rotation(env, r_min, axis)
-    toggle_rotation(env, -r_min, axis)
-    toggle_rotation(env, r_max, axis)
-    toggle_rotation(env, -r_max, axis)
+    toggle_rotation(env, r_min, axis, render=render)
+    toggle_rotation(env, -r_min, axis, render=render)
+    toggle_rotation(env, r_max, axis, render=render)
+    toggle_rotation(env, -r_max, axis, render=render)
 
 def collect_organized_spatial_trajectory(env, arm, env_configuration, spatial_xyz_goal, spatial_resolution, render=False):
     """
@@ -159,7 +159,7 @@ def collect_random_spatial_trajectory(env, arm, env_configuration, spatial_xyz_g
             action = np.concatenate([action_xyz, action_rxyz, gripper])
             
             # time.sleep(ACTION_FREQ)
-            print(active_robot.recent_ee_pose.last)
+            # print(active_robot.recent_ee_pose.last)
             env.step(action)
             if render:
                 env.render()
