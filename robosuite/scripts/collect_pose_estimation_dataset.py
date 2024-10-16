@@ -29,17 +29,29 @@ AXIS_IDX = {
         'rz': 5,
     }
 # ACTION_FREQ = 0.2
+VALID_WORKSPACE = np.array([[-0.4,0.2],
+                            [-0.5,0.5],
+                            [0.8,1.2],
+                        ])
+
+def check_gripper_in_ws(gripper_xyz):
+    x, y, z = gripper_xyz
+    gripper_in_x = VALID_WORKSPACE[0,0] < x < VALID_WORKSPACE[0,1]
+    gripper_in_y = VALID_WORKSPACE[1,0] < y < VALID_WORKSPACE[1,1]
+    gripper_in_z = z < VALID_WORKSPACE[2,1]
+    return (gripper_in_x and gripper_in_y and gripper_in_z)
 
 def toggle_rotation(env, num_of_toggle:int, axis:str, render=False):
     assert axis in ['rx', 'ry', 'rz']
-    rot = -1. if num_of_toggle < 0 else 1.
+    rot = -0.5 if num_of_toggle < 0 else 0.5
     for _ in range(abs(num_of_toggle)):
         gripper = np.array([np.random.uniform(-1., 1.)]).astype(float)
         action = np.array([0., 0., 0., 0., 0., 0.])
         action = np.concatenate([action, gripper])
         action[AXIS_IDX[axis]] = rot
         env.step(action)
-        # print(env.robots[0].recent_ee_pose.last)
+        if not check_gripper_in_ws(env.robots[0].recent_ee_pose.last[:3]):
+            break
         if render:
             env.render()
         # time.sleep(ACTION_FREQ)
@@ -75,6 +87,7 @@ def collect_organized_spatial_trajectory(env, arm, env_configuration, spatial_xy
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
+    xyz_trajectory = []
 
     # Go to xyz goal
     i = 0
@@ -82,7 +95,12 @@ def collect_organized_spatial_trajectory(env, arm, env_configuration, spatial_xy
         # Set active robot
         active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
         current_robot_xyz = active_robot.recent_ee_pose.last[:3]
-        action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) #* 3.75
+        if not check_gripper_in_ws(current_robot_xyz):
+            break
+        if i > 100:
+            action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) / 2.
+        else:
+            action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) #* 3.75
         action_rxyz = np.array([0., 0., 0.])
         gripper = np.array([np.random.uniform(gripper_low, gripper_high)]).astype(float)
         action = np.concatenate([action_xyz, action_rxyz, gripper])
@@ -104,10 +122,10 @@ def collect_organized_spatial_trajectory(env, arm, env_configuration, spatial_xy
     rz_min, rz_max = -20, 45
     rotation_backforth(env, rz_min, rz_max, 'rz', render=render)
     # rx_min, rx_max = -22, 22
-    rx_min, rx_max = -5, 5
+    rx_min, rx_max = -10, 10
     rotation_backforth(env, rx_min, rx_max, 'rx', render=render)
     # ry_min, ry_max = -17, 10
-    ry_min, ry_max = -5, 5
+    ry_min, ry_max = -10, 10
     rotation_backforth(env, ry_min, ry_max, 'ry', render=render)
     
     # do some random movement around the goal xyz
@@ -149,11 +167,17 @@ def collect_random_spatial_trajectory(env, arm, env_configuration, spatial_xyz_g
 
     # Go to xyz goal
     if spatial_xyz_goal is not None:
-        while True:
+        i = 0
+        while i < 300:
             # Set active robot
             active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
             current_robot_xyz = active_robot.recent_ee_pose.last[:3]
-            action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) #* 3.75
+            if not check_gripper_in_ws(current_robot_xyz):
+                break
+            if i > 100:
+                action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) / 2.
+            else:
+                action_xyz = (spatial_xyz_goal - current_robot_xyz) / np.linalg.norm(spatial_xyz_goal - current_robot_xyz) #* 3.75
             action_rxyz = np.array([0., 0., 0.])
             gripper = np.array([np.random.uniform(gripper_low, gripper_high)]).astype(float)
             action = np.concatenate([action_xyz, action_rxyz, gripper])
@@ -168,6 +192,7 @@ def collect_random_spatial_trajectory(env, arm, env_configuration, spatial_xyz_g
             # Also break if we complete the task
             if np.linalg.norm(spatial_xyz_goal - current_robot_xyz) < spatial_resolution:
                 break
+            i+=1
     # do some random movement around the goal xyz
     
     # do visualization
@@ -245,8 +270,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
         del states[-1]
         assert len(states) == len(actions)
 
-        num_eps += 1
         ep_data_grp = grp.create_group("demo_{}".format(num_eps))
+        num_eps += 1
 
         # store model xml as an attribute
         xml_path = os.path.join(directory, ep_directory, "model.xml")
@@ -339,7 +364,7 @@ if __name__ == "__main__":
 
     # spatial_resolution = 0.013
     spatial_resolution = 0.05
-    x_min, x_max = -0.4, 0.2
+    x_min, x_max = -0.3, 0.16
     x_ = np.linspace(x_min, x_max, int((x_max-x_min)//spatial_resolution))
     y_min, y_max = -0.4, 0.4
     y_ = np.linspace(y_min, y_max, int((y_max-y_min)//spatial_resolution))
@@ -356,13 +381,13 @@ if __name__ == "__main__":
     for xyz in tqdm(xyz_coordinates, desc="generate organized spatial trajectory"):
         # xyz = np.array([0,0,1.0])
         collect_organized_spatial_trajectory(env, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
-        break
+        
+    gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
     for xyz in tqdm(xyz_coordinates, desc="generate random spatial trajectory"):
         # xyz = np.array([0,0,1.0])
         collect_random_spatial_trajectory(env, args.arm, args.config, xyz, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+    gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
     for xyz in tqdm(range(100), desc="generate random spatial trajectory at start"):
         goal = None
         collect_random_spatial_trajectory(env, args.arm, args.config, goal, spatial_resolution=np.sqrt(spatial_resolution**2*3), render=enable_render)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+    gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
