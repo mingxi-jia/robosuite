@@ -1,69 +1,130 @@
+<?xml version="1.0" ?>
 <mujoco model="pegs_arena">
-  <asset>
-    <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
-    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
-    <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
-    <texture file="../textures/steel-scratched.png" type="cube" name="steel-metal"/>
-    <texture file="../textures/brass-ambra.png" type="cube" name="brass-metal"/>
-    <material name="smetal" reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="steel-metal" texuniform="true"/>
-    <material name="bmetal"  reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="brass-metal" texuniform="true"/>
-    <!-- ceramic table texture and material-->
-    <texture file="../textures/ceramic.png" type="cube" name="tex-ceramic"/>
-    <material name="table_ceramic" reflectance="0.0" shininess="0.0" specular="0.2" texrepeat="1 1" texture="tex-ceramic" />
-    <!-- steel legs -->
-    <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
-    <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed" />
-    <!-- plaster walls -->
-    <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
-    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true" />
-    <!-- added table texture and material for domain randomization -->
-    <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
-    <material name="table_mat" texture="textable" />
-
-  </asset>
-  <worldbody>
-    <!-- Floor -->
-    <geom condim="3" group="1" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
-    <!-- Walls (visual only) -->
-    <geom pos="-1.25 2.25 1.5" quat="0.6532815 0.6532815 0.2705981 0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_leftcorner_visual" material="walls_mat"/>
-    <geom pos="-1.25 -2.25 1.5" quat="0.6532815 0.6532815 -0.2705981 -0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rightcorner_visual" material="walls_mat"/>
-    <geom pos="1.25 3 1.5" quat="0.7071 0.7071 0 0" size="1.75 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
-    <geom pos="1.25 -3 1.5" quat="0.7071 -0.7071 0 0" size="1.75 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
-    <geom pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" size="1.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
-    <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
-    <!-- Table body -->
-    <body name="table" pos="0 0 0.4">
-      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
-      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
-      <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
-      <!-- Legs (visual only) -->
-      <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="table_legs_metal"/>
-      <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="table_legs_metal"/>
-      <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg3_visual" material="table_legs_metal"/>
-      <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg4_visual" material="table_legs_metal"/>
-    </body>
-    <body name="peg1" pos="0.23 0.1 0.85">
-      <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" group="0" friction="1 0.005 0.0001"/>
-      <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" conaffinity="0" contype="0" group="1" material="bmetal" />
-    </body>
-    <body name="peg2" pos="0.23 -0.1 0.85">
-      <geom pos="0 0 0" size="0.02 0.1" type="cylinder" group="0" friction="1 0.005 0.0001"/>
-      <geom pos="0 0 0" size="0.02 0.1" type="cylinder" conaffinity="0" contype="0" group="1" material="smetal" />
-    </body>
-    <light pos="1.0 1.0 1.5" dir="-0.2 -0.2 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false"/>
-    <!-- front view -->
-    <!-- quaternion format: wxyz -->
-    <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
-    <!-- bird view -->
-    <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
-    <!-- agent view -->
-    <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
-    <!-- side view -->
-    <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
-    <!-- new camera -->
-    <camera mode="fixed" name="sideview2" pos="0. -1.5 1.4879572214102434" quat="0.7933533 0.6087614 0 0" />
-    <camera mode="fixed" name="backview" pos="-0.8 0.7 1.2" quat=" 0.4777144 0.1530459 -0.5213338 -0.6903455 " />
-    <camera mode="fixed" name="spaceview" pos="0.85 0 1.55" quat="0.6341848 0.3127453 0.3127453 0.6341848"/>
-    <!-- new camera ends-->
-  </worldbody>
+    <asset>
+        <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
+        <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
+        <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
+        <texture file="../textures/steel-scratched.png" type="cube" name="steel-metal"/>
+        <texture file="../textures/brass-ambra.png" type="cube" name="brass-metal"/>
+        <material name="smetal" reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="steel-metal" texuniform="true"/>
+        <material name="bmetal" reflectance="1.0" shininess="1.0" specular="1.0" texrepeat="1 1" texture="brass-metal" texuniform="true"/>
+        <!-- ceramic table texture and material-->
+        <texture file="../textures/ceramic.png" type="cube" name="tex-ceramic"/>
+        <material name="table_ceramic" reflectance="0.0" shininess="0.0" specular="0.2" texrepeat="1 1" texture="tex-ceramic"/>
+        <!-- steel legs -->
+        <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
+        <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed"/>
+        <!-- plaster walls -->
+        <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
+        <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true"/>
+        <!-- added table texture and material for domain randomization -->
+        <texture name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
+        <material name="table_mat" texture="textable"/>
+    </asset>
+    <worldbody>
+        <!-- Floor -->
+        <geom condim="3" group="1" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+        <!-- Walls (visual only) -->
+        <geom pos="-1.25 2.25 1.5" quat="0.6532815 0.6532815 0.2705981 0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_leftcorner_visual" material="walls_mat"/>
+        <geom pos="-1.25 -2.25 1.5" quat="0.6532815 0.6532815 -0.2705981 -0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rightcorner_visual" material="walls_mat"/>
+        <geom pos="1.25 3 1.5" quat="0.7071 0.7071 0 0" size="1.75 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
+        <geom pos="1.25 -3 1.5" quat="0.7071 -0.7071 0 0" size="1.75 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
+        <geom pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" size="1.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
+        <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
+        <!-- Table body -->
+        <body name="table" pos="0 0 0.4">
+            <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
+            <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
+            <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+            <!-- Legs (visual only) -->
+            <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="table_legs_metal"/>
+            <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="table_legs_metal"/>
+            <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg3_visual" material="table_legs_metal"/>
+            <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg4_visual" material="table_legs_metal"/>
+        </body>
+        <body name="peg1" pos="0.23 0.1 0.85">
+            <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" group="0" friction="1 0.005 0.0001"/>
+            <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" conaffinity="0" contype="0" group="1" material="bmetal"/>
+        </body>
+        <body name="peg2" pos="0.23 -0.1 0.85">
+            <geom pos="0 0 0" size="0.02 0.1" type="cylinder" group="0" friction="1 0.005 0.0001"/>
+            <geom pos="0 0 0" size="0.02 0.1" type="cylinder" conaffinity="0" contype="0" group="1" material="smetal"/>
+        </body>
+        <light pos="1.0 1.0 1.5" dir="-0.2 -0.2 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false"/>
+        <!-- front view -->
+        <!-- quaternion format: wxyz -->
+        <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+        <!-- bird view -->
+        <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+        <!-- agent view -->
+        <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
+        <!-- side view -->
+        <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364"/>
+        <!-- new camera -->
+        <camera mode="fixed" name="sideview2" pos="0. -1.5 1.4879572214102434" quat="0.7933533 0.6087614 0 0"/>
+        <camera mode="fixed" name="backview" pos="-0.8 0.7 1.2" quat=" 0.4777144 0.1530459 -0.5213338 -0.6903455 "/>
+        <camera mode="fixed" name="spaceview" pos="0.85 0 1.55" quat="0.6341848 0.3127453 0.3127453 0.6341848"/>
+        <camera mode="fixed" name="farspaceview" pos="1.0 0 1.65" quat="0.6123724 0.3535534 0.3535534 0.6123724"/>
+        <!-- new camera ends-->
+        <!-- <camera mode="fixed" name="camera0" pos="-0.6646284848634503 -1.151170303941019 0.9123466631435289" quat="-0.7007958126229108 -0.6638285179935602 0.17787231530912345 0.1877776720514212"/>
+        <camera mode="fixed" name="camera1" pos="-0.2471242995744336 -1.3060833327653292 0.9123466631435289" quat="-0.7223482102301528 -0.6842440169236628 0.0641637526889205 0.06773690492008072"/>
+        <camera mode="fixed" name="camera2" pos="0.1981154710985721 -1.3144102676405625 0.9123466631435289" quat="0.7234885188659403 0.6853241737655208 0.05135794687836688 0.05421796916175554"/>
+        <camera mode="fixed" name="camera3" pos="0.6211200808666965 -1.1752165488588442 0.9123466631435289" quat="0.7041845157310759 0.6670384654871019 0.16542837548488173 0.17464075387906206"/>
+        <camera mode="fixed" name="camera4" pos="0.9744143098011478 -0.9041243523002224 0.9123466631435289" quat="0.6649816926311929 0.6299036089557 0.27482413518382864 0.29012854664133075"/>
+        <camera mode="fixed" name="camera5" pos="1.2183467668037773 -0.531559260465215 0.9123466631435289" quat="0.6069878414895135 0.5749689595718348 0.37645392464926763 0.3974178976779461"/>
+        <camera mode="fixed" name="camera6" pos="1.3255400976412148 -0.09933549774809784 0.9123466631435289" quat="0.531841750403711 0.5037868586232108 0.46744589305449225 0.4934770284809354"/>
+        <camera mode="fixed" name="camera7" pos="1.28396363683396 0.34403701960058714 0.9123466631435289" quat="0.4416668948325427 0.41836876728209943 0.5452287927263298 0.5755915036897581"/>
+        <camera mode="fixed" name="camera8" pos="1.0982836494181483 0.7487971133680325 0.9123466631435289" quat="0.3390114325049798 0.3211284268100337 0.6076046373666577 0.6414409355051941"/>
+        <camera mode="fixed" name="camera9" pos="0.7893396204380987 1.0695172065816343 0.9123466631435289" quat="0.2267761976734785 0.214813651146634 0.6528108126678103 0.6891645531218336"/>
+        <camera mode="fixed" name="camera10" pos="0.39180536994876264 1.270201812172718 0.9123466631435289" quat="0.10813272944711051 0.1024286792850723 0.6795698842024054 0.7174137843205796"/>
+        <camera mode="fixed" name="camera11" pos="-0.049702505598218566 1.3283274266929832 0.9123466631435289" quat="-0.013566349443119968 -0.012850718402129422 0.6871256951180795 0.7253903633724701"/>
+        <camera mode="fixed" name="camera12" pos="-0.4856321029661963 1.237370418321116 0.9123466631435289" quat="-0.1348820709332352 -0.12776698096467018 0.6752647335898183 0.7128688884020811"/>
+        <camera mode="fixed" name="camera13" pos="-0.8670575877065603 1.0075391958470024 0.9123466631435289" quat="-0.25238629985847594 -0.23907280891114882 0.6443221662291994 0.6802031907853745"/>
+        <camera mode="fixed" name="camera14" pos="-0.6341390406738848 -1.098361037510156 1.1546921376597752" quat="-0.7394790900564511 -0.6121557227100909 0.16402663154225905 0.19814282500032737"/>
+        <camera mode="fixed" name="camera15" pos="-0.23578761643286142 -1.2461675214689603 1.1546921376597752" quat="-0.7622211599776278 -0.6309820674110054 0.05916920911713328 0.0714759191069745"/>
+        <camera mode="fixed" name="camera16" pos="0.18902703938564244 -1.2541124630623366 1.1546921376597752" quat="0.7634244125901393 0.6319781442203692 0.04736021462780504 0.05721075066128819"/>
+        <camera mode="fixed" name="camera17" pos="0.5926265593401637 -1.1213041749640553 1.1546921376597752" quat="0.7430548464262252 0.6151158060365945 0.15255133518184677 0.18428076115624778"/>
+        <camera mode="fixed" name="camera18" pos="0.929713621532724 -0.8626481748451615 1.1546921376597752" quat="0.7016880639321287 0.5808715481875573 0.2534316657562826 0.306143372727564"/>
+        <camera mode="fixed" name="camera19" pos="1.1624558193105576 -0.5071742893505168 1.1546921376597752" quat="0.6404930061154884 0.5302130436432682 0.3471505337059926 0.4193549962108144"/>
+        <camera mode="fixed" name="camera20" pos="1.2647317186016582 -0.09477853971272927 1.1546921376597752" quat="0.5611989206536374 0.46457179854892844 0.4310596347314691 0.5207165017425697"/>
+        <camera mode="fixed" name="camera21" pos="1.2250625536901592 0.32825452193888727 1.1546921376597752" quat="0.46604649687678434 0.385802700777293 0.502787868563632 0.6073636196535851"/>
+        <camera mode="fixed" name="camera22" pos="1.0479005274246234 0.7144464824256453 1.1546921376597752" quat="0.35772454845190477 0.29613160457586396 0.5603083414274124 0.6768478788950351"/>
+        <camera mode="fixed" name="camera23" pos="0.7531291256247373 1.020453728379146 1.1546921376597752" quat="0.2392940329857264 0.19809243245999988 0.6019956419309811 0.7272057958427266"/>
+        <camera mode="fixed" name="camera24" pos="0.3738315270691889 1.2119320447105522 1.1546921376597752" quat="0.11410155559804412 0.09445557172432578 0.6266717718806587 0.7570143583446312"/>
+        <camera mode="fixed" name="camera25" pos="-0.0474224321360801 1.2673911805585047 1.1546921376597752" quat="-0.014315199321807975 -0.011850411058833665 0.6336394341102441 0.7654312371455742"/>
+        <camera mode="fixed" name="camera26" pos="-0.4633540134210406 1.180606771907478 1.1546921376597752" quat="-0.14232743586941007 -0.11782152536518908 0.622701736678511 0.7522185883961299"/>
+        <camera mode="fixed" name="camera27" pos="-0.8272818264631194 0.9613189227467783 1.1546921376597752" quat="-0.26631778900551994 -0.22046324337146891 0.5941677566343919 0.7177497746353102"/>
+        <camera mode="fixed" name="camera28" pos="-0.5579347153234652 -0.96637127424672 1.5361920849422372" quat="-0.8027088425767815 -0.49671121767903104 0.13309336964857593 0.21508518612576966"/>
+        <camera mode="fixed" name="camera29" pos="-0.17899804464009342 -1.1014192145896715 1.5361920849422372" quat="-0.8283305853993347 -0.5125657920918353 0.04137858854368885 0.06686975799050467"/>
+        <camera mode="fixed" name="camera30" pos="0.2232025570286323 -1.0933184370475904 1.5361920849422372" quat="0.8268160640871517 0.5116286157642885 0.05169176282268049 0.08353633586137407"/>
+        <camera mode="fixed" name="camera31" pos="0.5963940771014711 -0.943121779544185 1.5361920849422372" quat="0.7982148946402806 0.4939303907672956 0.14306868241884707 0.23120576380384403"/>
+        <camera mode="fixed" name="camera32" pos="0.892073741233874 -0.6703499283607813 1.5361920849422372" quat="0.743464056692642 0.4600509142454986 0.22975864535307292 0.3713008478953869"/>
+        <camera mode="fixed" name="camera33" pos="1.0718127983521646 -0.31045436305648455 1.5361920849422372" quat="0.6643571978848442 0.4111000841549158 0.30892167230613565 0.499232047108668"/>
+        <camera mode="fixed" name="camera34" pos="1.1122510099208882 0.08979018422004513 1.5361920849422372" quat="0.5634858736336691 0.34868153879934377 0.3779643677823613 0.6108083115487329"/>
+        <camera mode="fixed" name="camera35" pos="1.0081327220864094 0.4783649244154007 1.5361920849422372" quat="0.4441546472943146 0.27484012134107877 0.4346248802287086 0.7023743820275454"/>
+        <camera mode="fixed" name="camera36" pos="0.7729899299460197 0.8047677642987157 1.5361920849422372" quat="0.3102728320498812 0.19199489035836342 0.47704700071259043 0.7709305370352504"/>
+        <camera mode="fixed" name="camera37" pos="0.43738355777716914 1.0265769380024525 1.5361920849422372" quat="0.16622642108394692 0.10285987103616222 0.5038409726719556 0.8142308641751034"/>
+        <camera mode="fixed" name="camera38" pos="0.04493153166435585 1.1149644584983867 1.5361920849422372" quat="0.01673440162761593 0.010355143196006743 0.5141290205989042 0.8308568366715645"/>
+        <camera mode="fixed" name="camera39" pos="-0.3533601339473552 1.0584428194234268 1.5361920849422372" quat="-0.13330583994040276 -0.08248882106240144 0.5075741061286848 0.8202637845714614"/>
+        <camera mode="fixed" name="camera40" pos="-0.7057264611808978 0.8643579977309125 1.5361920849422372" quat="-0.2789789573829959 -0.17263043619116428 0.4843909694792489 0.782798738233021"/>
+        <camera mode="fixed" name="camera41" pos="-0.43051104185869715 -0.7456669977186755 1.8762738575004465" quat="-0.8681633403437101 -0.33368490794936395 0.08941060161148558 0.2326236659434029"/>
+        <camera mode="fixed" name="camera42" pos="-0.0818453524756981 -0.8571233090560383 1.8762738575004465" quat="-0.8977708040760438 -0.34506475244524715 0.016437460071543786 0.042766094307878824"/>
+        <camera mode="fixed" name="camera43" pos="0.28161273929277086 -0.8136665740443477 1.8762738575004465" quat="0.8863445147829181 0.3406729748686105 0.05728697642461478 0.14904615589786288"/>
+        <camera mode="fixed" name="camera44" pos="0.594173268395968 -0.6231509895464318 1.8762738575004465" quat="0.8344067255056693 0.3207103069826216 0.12839303902009616 0.3340460625491691"/>
+        <camera mode="fixed" name="camera45" pos="0.7993452921419095 -0.32000958201217894 1.8762738575004465" quat="0.7443313187633261 0.2860891678368238 0.19363073495738464 0.5037779703219905"/>
+        <camera mode="fixed" name="camera46" pos="0.8600468377406031 0.04096908030982411 1.8762738575004465" quat="0.6202353052418598 0.23839196049747724 0.2500182926185053 0.6504840671417199"/>
+        <camera mode="fixed" name="camera47" pos="0.7653069500827475 0.39454315455230893 1.8762738575004465" quat="0.46779065060017105 0.17979874630883683 0.29497844717788074 0.7674589648214197"/>
+        <camera mode="fixed" name="camera48" pos="0.5322485383842976 0.6768090735479416 1.8762738575004465" quat="0.29396503108727395 0.11298760242496984 0.32645623775930555 0.8493561773317214"/>
+        <camera mode="fixed" name="camera49" pos="0.20299364990732194 0.836751221538605 1.8762738575004465" quat="0.10670336706391759 0.041012216897472545 0.3430129320286014 0.8924324887244522"/>
+        <camera mode="fixed" name="camera50" pos="-0.16294950076530995 0.8454622929790425 1.8762738575004465" quat="-0.08543530965711954 -0.03283768400918032 0.343891785279347 0.8947190415641598"/>
+        <camera mode="fixed" name="camera51" pos="-0.499441808953665 0.7013678835804609 1.8762738575004465" quat="-0.273669057213377 -0.10518669692811632 0.3290526284092803 0.8561113260538246"/>
+        <camera mode="fixed" name="camera52" pos="-0.2624999999999999 -0.4546633369868303 2.0186533479473208" quat="-0.9222834193374819 -0.1629167189131445 0.04365340326630529 0.24712509740409258"/>
+        <camera mode="fixed" name="camera53" pos="0.034336642845825216 -0.5238759347002668 2.0186533479473208" quat="0.9543068340824842 0.16857349377135275 0.005518524791546439 0.031240771041795727"/>
+        <camera mode="fixed" name="camera54" pos="0.3195997502295784 -0.41651050365289843 2.0186533479473208" quat="0.9041459850593856 0.15971283253707488 0.054215201199843244 0.30691620526263064"/>
+        <camera mode="fixed" name="camera55" pos="0.4971383179849305 -0.16875571928415975 2.0186533479473208" quat="0.77612069090483 0.13709780940618826 0.09824290088438803 0.5561602219695589"/>
+        <camera mode="fixed" name="camera56" pos="0.5071110588017608 0.13587999867882347 2.0186533479473208" quat="0.5812564039869784 0.10267601498554144 0.13380998791138154 0.7575080938022685"/>
+        <camera mode="fixed" name="camera57" pos="0.3461565529275362 0.3947158989264631 2.0186533479473208" quat="0.33633470585076114 0.05941183109763049 0.1578534486280925 0.8936198772364577"/>
+        <camera mode="fixed" name="camera58" pos="0.06852625091552704 0.5205085522212505 2.0186533479473208" quat="0.06244808868346355 0.011031140208522095 0.16830267634192614 0.9527737168769939"/>
+        <camera mode="fixed" name="camera59" pos="-0.2322015623649758 0.4708581893046613 2.0186533479473208" quat="-0.2168165159495844 -0.03829954506832607 0.16425779057845163 0.9298753237737323"/> -->
+    </worldbody>
 </mujoco>
