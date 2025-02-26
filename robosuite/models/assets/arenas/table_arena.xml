@@ -46,7 +46,12 @@
     <!-- agent view -->
     <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
     <!-- side view -->
-    <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
-
+    <camera mode="fixed" name="sideview" pos="0. 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
+    <!-- new camera -->
+    <camera mode="fixed" name="sideview2" pos="0. -1.5 1.4879572214102434" quat="0.7933533 0.6087614 0 0" />
+    <camera mode="fixed" name="backview" pos="-0.8 0.7 1.2" quat=" 0.4777144 0.1530459 -0.5213338 -0.6903455 " />
+    <camera mode="fixed" name="spaceview" pos="0.85 0 1.55" quat="0.6341848 0.3127453 0.3127453 0.6341848"/>
+    <camera mode="fixed" name="farspaceview" pos="1.0 0 1.65" quat="0.6123724 0.3535534 0.3535534 0.6123724"/>
+    <!-- new camera ends-->
   </worldbody>
 </mujoco>

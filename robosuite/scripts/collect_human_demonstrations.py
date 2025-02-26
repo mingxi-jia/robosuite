@@ -20,7 +20,7 @@ import robosuite.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
-
+import mimicgen
 
 def collect_human_trajectory(env, device, arm, env_configuration):
     """
@@ -46,7 +46,9 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     device.start_control()
 
     # Loop until we get a reset from the input or the task completes
+    i=0
     while True:
+        i+=1
         # Set active robot
         active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
 
@@ -58,11 +60,14 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         # If action is none, then this a reset so we should break
         if action is None:
             break
-
+        print(env.robots[0].recent_ee_pose.last)
         # Run environment step
+        # print(action)
         env.step(action)
         env.render()
-
+        # if i % 100 ==0:
+        #     print(env.sim.data.qpos[env.drawer_qpos_addr])
+        
         # Also break if we complete the task
         if task_completion_hold_count == 0:
             break
@@ -185,7 +190,7 @@ if __name__ == "__main__":
         "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
     )
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
-    parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
+    parser.add_argument("--camera", type=str, default="spaceview", help="Which camera to use for collecting demos")
     parser.add_argument(
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
@@ -250,4 +255,5 @@ if __name__ == "__main__":
     # collect demonstrations
     while True:
         collect_human_trajectory(env, device, args.arm, args.config)
+        
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
