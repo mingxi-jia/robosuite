@@ -9,6 +9,7 @@ import datetime
 import json
 import os
 import shutil
+import threading
 import time
 from glob import glob
 
@@ -22,7 +23,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 import mimicgen
 
-def collect_human_trajectory(env, device, arm, env_configuration):
+def collect_human_trajectory(env, device, arm, env_configuration, free_mode=False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -33,6 +34,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
         env_configuration (str): specified environment configuration
+        free_mode (bool): if True, wait for user to press '1' to end demo instead of checking task success
     """
 
     env.reset()
@@ -44,6 +46,25 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
+
+    # In free mode, listen for '1' key press to end the demo
+    end_demo_flag = threading.Event()
+    listener = None
+    if free_mode:
+        from pynput import keyboard as pynput_keyboard
+
+        def on_press(key):
+            try:
+                if key.char == '1':
+                    print("\n[Free mode] '1' pressed — ending demo.")
+                    end_demo_flag.set()
+                    return False  # stop listener
+            except AttributeError:
+                pass
+
+        listener = pynput_keyboard.Listener(on_press=on_press)
+        listener.start()
+        print("[Free mode] Press '1' to finish the current demonstration.")
 
     # Loop until we get a reset from the input or the task completes
     i=0
@@ -60,26 +81,34 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         # If action is none, then this a reset so we should break
         if action is None:
             break
-        print(env.robots[0].recent_ee_pose.last)
+        # print(env.robots[0].recent_ee_pose.last)
         # Run environment step
         # print(action)
         env.step(action)
         env.render()
         # if i % 100 ==0:
         #     print(env.sim.data.qpos[env.drawer_qpos_addr])
-        
-        # Also break if we complete the task
-        if task_completion_hold_count == 0:
-            break
 
-        # state machine to check for having a success for 10 consecutive timesteps
-        if env._check_success():
-            if task_completion_hold_count > 0:
-                task_completion_hold_count -= 1  # latched state, decrement count
-            else:
-                task_completion_hold_count = 10  # reset count on first success timestep
+        if free_mode:
+            # End demo when user presses '1'
+            if end_demo_flag.is_set():
+                break
         else:
-            task_completion_hold_count = -1  # null the counter if there's no success
+            # Also break if we complete the task
+            if task_completion_hold_count == 0:
+                break
+
+            # state machine to check for having a success for 10 consecutive timesteps
+            if env._check_success():
+                if task_completion_hold_count > 0:
+                    task_completion_hold_count -= 1  # latched state, decrement count
+                else:
+                    task_completion_hold_count = 10  # reset count on first success timestep
+            else:
+                task_completion_hold_count = -1  # null the counter if there's no success
+
+    if listener is not None and listener.is_alive():
+        listener.stop()
 
     # cleanup for end of data collection episodes
     env.close()
@@ -197,6 +226,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument("--free-mode", action="store_true", help="End demo by pressing '1' instead of task success check")
     args = parser.parse_args()
 
     # Get controller config
@@ -254,6 +284,6 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
-        
+        collect_human_trajectory(env, device, args.arm, args.config, free_mode=args.free_mode)
+
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

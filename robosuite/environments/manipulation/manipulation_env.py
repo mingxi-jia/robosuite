@@ -317,4 +317,5 @@ class ManipulationEnv(RobotEnv):
         for robot in robots:
             assert issubclass(
                 ROBOT_CLASS_MAPPING[robot], Manipulator
-            ), "Only manipulator robots supported for manipulation environment!"
+            ), "Only manipulator robots supported for manipulation environment! Available robots are: {}".format(
+                ROBOT_CLASS_MAPPING.keys()            )
